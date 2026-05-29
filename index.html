@@ -2,9 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>alsad-theater</title>
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+    <meta name="theme-color" content="#09090E" />
+    <title>Alsad Theater</title>
+    <style>
+      /* Kill ALL default spacing and width constraints */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body, #root {
+        width: 100%;
+        min-width: 100%;
+        max-width: 100%;
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+      }
+      body { background: #09090E; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

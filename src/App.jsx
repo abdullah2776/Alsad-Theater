@@ -29,7 +29,6 @@ async function fetchArabic(mediaType, id) {
 }
 
 
-
 const fmt = (n) => (typeof n === "number" ? n.toFixed(1) : "N/A");
 const yr = (d) => d?.slice(0, 4) ?? "";
 const rt = (m) => m ? `${Math.floor(m / 60)}h ${m % 60}m` : "";
@@ -100,8 +99,10 @@ const CSS = `
   --detail-ov:rgba(9,9,14,.98);--sk1:#181825;--sk2:#0F0F18;
   --gold:#C9A84C;--gold2:#E8C96A;--red:#E53E3E;
 }
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden}
+html,body{width:100%;min-width:100%;margin:0;padding:0;overflow-x:hidden}
+html{scroll-behavior:smooth;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;min-height:100vh;overflow-x:hidden;width:100vw}
+#root,main{width:100%;max-width:100%;min-height:100vh;margin:0;padding:0;box-sizing:border-box;overflow-x:hidden}
 body[dir=rtl]{font-family:'Tajawal',sans-serif}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:var(--bg2)}
