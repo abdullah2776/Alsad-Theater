@@ -199,7 +199,7 @@ body[dir=rtl] .cinzel{font-family:'Tajawal',sans-serif;font-weight:700}
 /* ── Theme toggle ── */
 .theme-toggle{
   background:none;border:1px solid var(--brd);border-radius:6px;
-  cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:Arial, sans-serif;font-size:13px;font-weight:600;
   padding:5px 10px;color:var(--bg);background:var(--primary);
   transition:all .2s;display:flex;align-items:center;gap:5px;white-space:nowrap;
 }
@@ -435,6 +435,10 @@ body[dir=rtl] .toast{left:22px;right:auto;transform:none}
 @media(min-width:768px){.filters-panel{padding:20px}}
 .filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
 
+.moon-icon {
+  font-family: "Segoe UI Symbol", "Noto Sans Symbols", sans-serif;
+}
+
 /* Error */
 .err-box{background:rgba(163,0,0,.08);border:1px solid rgba(163,0,0,.25);border-radius:8px;padding:14px;color:#cc6666;font-size:13.5px;margin-bottom:16px}
 body.light .err-box{color:#8B0000}
@@ -515,7 +519,9 @@ function MovieCard({ movie, onClick, t }) {
 function ThemeToggle({ theme, toggle }) {
   return (
     <button className="theme-toggle" onClick={toggle} title="Toggle theme">
-      {theme === "dark" ? "☀ Light" : "☾  Dark"}
+      {theme === "dark" ? "☀ Light" :   <>
+      <span className="moon-icon">☾</span> Dark
+    </>}
     </button>
   );
 }
