@@ -515,7 +515,7 @@ function MovieCard({ movie, onClick, t }) {
 function ThemeToggle({ theme, toggle }) {
   return (
     <button className="theme-toggle" onClick={toggle} title="Toggle theme">
-      {theme === "dark" ? "☀ Light" : "⏾ Dark"}
+      {theme === "dark" ? "☀ Light" : "☾  Dark"}
     </button>
   );
 }
