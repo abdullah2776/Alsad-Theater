@@ -82,10 +82,11 @@ const T = {
     failed_load:"فشل التحميل. تحقق من اتصالك.",
   }
 };
-
 // ── CSS — mobile-first ────────────────────────────────────────────────────────
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Outfit:wght@300;400;500;600&family=Tajawal:wght@300;400;500;700&display=swap');
+
+
 
 /* ── Reset ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -338,7 +339,7 @@ body:not(.light) .stitle::before{background:#8B0000}
 @media(min-width:768px){.hrow-item{flex:0 0 175px}}
 
 /* ── Movie Card ── */
-.poster{width:100%;aspect-ratio:2/3;object-fit:cover;background:var(--bg3)}
+.poster{width:100%;height:280px; aspect-ratio:2/3;object-fit:cover;background:var(--bg3)}
 .minfo{padding:9px 10px}
 .mtitle{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px}
 @media(min-width:768px){.mtitle{font-size:13px}}
