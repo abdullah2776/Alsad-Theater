@@ -1,2 +1,2 @@
 DEMO for the site
-https://alsad-theater.vercel.app/
+https://alsad-theater.netlify.app
