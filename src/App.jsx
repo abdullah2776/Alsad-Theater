@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
 
 const TMDB_KEY = "20dd09adbf02a4a795efed497b592817";
 const BASE = "https://api.themoviedb.org/3";
@@ -528,21 +529,24 @@ function ThemeToggle({ theme, toggle }) {
 
 function Nav({ page, go, user, openAuth, openSearch, wl, lang, toggleLang, t, theme, toggleTheme }) {
   const [drawer, setDrawer] = useState(false);
+  const navigate = useNavigate();
   const links = [["home",t.home],["movies",t.movies],["tv",t.tv],["discover",t.discover],["contact","Contact"]];
   const icons = { home:"🏠", movies:"🎬", tv:"📺", discover:"🔭", contact:"📩" };
-  const close = (id) => { go(id); setDrawer(false); };
-
+ const close = (id) => {
+  navigate(id === "home" ? "/" : `/${id}`);
+  setDrawer(false);
+};
   return (
     <>
       <nav className="nav">
         <div className="nav-in">
           {/* Logo — always left */}
-          <div className="nav-logo cinzel" onClick={()=>go("home")}>⬡ ALSAD</div>
+         <div className="nav-logo cinzel" onClick={()=>navigate("/")}>⬡ ALSAD</div>
 
           {/* Desktop nav links */}
           <div className="nav-links">
             {links.map(([id,lbl])=>(
-              <button key={id} className={`nav-lnk${page===id||page.startsWith(id)?" on":""}`} onClick={()=>go(id)}>{lbl}</button>
+              <button key={id} className={`nav-lnk${page===id||page.startsWith(id)?" on":""}`} onClick={()=>navigate(id === "home" ? "/" : `/${id}`)}>{lbl}</button>
             ))}
           </div>
 
@@ -1227,6 +1231,7 @@ export default function App() {
   const [lang,setLang]=useState("en");
   const [theme,setTheme]=useState("dark");
   const t=T[lang];
+const navigate = useNavigate();
 
   useEffect(()=>{
     try{
@@ -1270,11 +1275,13 @@ export default function App() {
       <style>{CSS}</style>
       <Nav page={page} go={setPage} user={user} openAuth={setAuthMode} openSearch={()=>setShowSearch(true)} wl={wl} lang={lang} toggleLang={toggleLang} t={t} theme={theme} toggleTheme={toggleTheme}/>
       <main style={{width:"100%",overflowX:"hidden"}}>
-        {page==="home"&&<HomePage onOpen={openMovie} go={setPage} t={t}/>}
-        {page==="movies"&&<BrowsePage mediaType="movie" title={t.movies} onOpen={openMovie} t={t}/>}
-        {page==="tv"&&<BrowsePage mediaType="tv" title={t.tv} onOpen={openMovie} t={t}/>}
-        {page==="discover"&&<DiscoverPage onOpen={openMovie} t={t}/>}
-       {page==="contact"&&<ContactPage t={t}/>}
+       <Routes>
+  <Route path="/" element={<HomePage onOpen={openMovie} go={setPage} t={t} />} />
+  <Route path="/movies" element={<BrowsePage mediaType="movie" title={t.movies} onOpen={openMovie} t={t} />} />
+  <Route path="/tv" element={<BrowsePage mediaType="tv" title={t.tv} onOpen={openMovie} t={t} />} />
+  <Route path="/discover" element={<DiscoverPage onOpen={openMovie} t={t} />} />
+  <Route path="/contact" element={<ContactPage t={t} />} />
+  </Routes>
         {page==="detail"&&movie&&<MovieDetail id={movie} mediaType={mType} onBack={()=>setPage("home")} user={user} wl={wl} setWl={setWl} setToast={setToast} onActorOpen={openActor} t={t} lang={lang}/>}
         {page==="actor"&&actor&&<ActorPage actorId={actor} onOpen={openMovie} onBack={()=>setPage("home")} t={t}/>}
         {page==="dash"&&user&&<Dashboard user={user} wl={wl} setWl={setWl} onOpen={openMovie} go={setPage} setUser={setUser} t={t}/>}

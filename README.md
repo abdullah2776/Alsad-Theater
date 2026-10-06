@@ -33,9 +33,11 @@ The project is designed with a responsive interface that works across desktop, t
 * Responsive Design
 * Toast Notifications
 * Local Storage for User Data and Watchlist
+* Navigation between pages using React Router
 
 ## Technologies Used
 
+* React Router
 * React
 * JavaScript
 * Vite
@@ -59,6 +61,7 @@ The project demonstrates several important React concepts, including:
 * `useState`
 * `useEffect`
 * Dynamic Data Fetching
+* React Router
 
 ## Team Members
 
@@ -126,10 +129,5 @@ https://alsad-theater.netlify.app
 https://github.com/abdullah2776/Alsad-Theater
 
 
-## Live Demo
 
-https://alsad-theater.netlify.app
 
-## Repository
-
-https://github.com/abdullah2776/Alsad-Theater.git
