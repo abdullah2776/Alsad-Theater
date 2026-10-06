@@ -106,19 +106,19 @@ http://localhost:5173
 
 ### Home Page
 
-![Home Page](public/screenshots/home.png)
+![Home Page](public/Screenshots/home.png)
 
 ### Movies Page
 
-![Movies Page](public/screenshots/Movies%20Page.png)
+![Movies Page](public/Screenshots/movies-page.png)
 
 ### Movie Details Page
 
-![Movie Details Page](public/screenshots/Movie%20Details%20Page.png)
+![Movie Details Page](public/Screenshots/movie-details-page.png)
 
 ### Contact Page
 
-![Contact Page](public/screenshots/contact%20us.png)
+![Contact Page](public/Screenshots/contact-us.png)
 
 ## Live Demo
 
