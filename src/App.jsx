@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
 
 const TMDB_KEY = "20dd09adbf02a4a795efed497b592817";
 const BASE = "https://api.themoviedb.org/3";
@@ -51,7 +52,7 @@ const T = {
     sort_pop:"Popular", sort_rated:"Top Rated", sort_new:"Newest", sort_box:"Box Office",
     sort_by:"Sort", min_rating:"Min Rating", year_lbl:"Year", filters:"Filters",
     member_since:"Member Since", reviews_written:"Reviews Written",
-    powered:"Abdullah Qubbaj · All rights reserved",
+    powered:"Abdullah Qubbaj & Areej Al-Tobasi · All rights reserved",
     search_placeholder:"Search movies, shows, actors…", searching:"Searching…",
     failed_load:"Failed to load. Check your connection.",
   },
@@ -528,21 +529,24 @@ function ThemeToggle({ theme, toggle }) {
 
 function Nav({ page, go, user, openAuth, openSearch, wl, lang, toggleLang, t, theme, toggleTheme }) {
   const [drawer, setDrawer] = useState(false);
-  const links = [["home",t.home],["movies",t.movies],["tv",t.tv],["discover",t.discover]];
-  const icons = { home:"🏠", movies:"🎬", tv:"📺", discover:"🔭" };
-  const close = (id) => { go(id); setDrawer(false); };
-
+  const navigate = useNavigate();
+  const links = [["home",t.home],["movies",t.movies],["tv",t.tv],["discover",t.discover],["contact","Contact"]];
+  const icons = { home:"🏠", movies:"🎬", tv:"📺", discover:"🔭", contact:"📩" };
+ const close = (id) => {
+  navigate(id === "home" ? "/" : `/${id}`);
+  setDrawer(false);
+};
   return (
     <>
       <nav className="nav">
         <div className="nav-in">
           {/* Logo — always left */}
-          <div className="nav-logo cinzel" onClick={()=>go("home")}>⬡ ALSAD</div>
+         <div className="nav-logo cinzel" onClick={()=>navigate("/")}>⬡ ALSAD</div>
 
           {/* Desktop nav links */}
           <div className="nav-links">
             {links.map(([id,lbl])=>(
-              <button key={id} className={`nav-lnk${page===id||page.startsWith(id)?" on":""}`} onClick={()=>go(id)}>{lbl}</button>
+              <button key={id} className={`nav-lnk${page===id||page.startsWith(id)?" on":""}`} onClick={()=>navigate(id === "home" ? "/" : `/${id}`)}>{lbl}</button>
             ))}
           </div>
 
@@ -1139,7 +1143,83 @@ function Dashboard({ user, wl, setWl, onOpen, go, setUser, t }) {
     </div></div>
   );
 }
+function ContactPage({ t }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
 
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (name === "" || email === "" || message === "") {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    setSent(true);
+
+    setName("");
+    setEmail("");
+    setMessage("");
+  }
+
+  return (
+    <div className="sec">
+      <div className="smx">
+        <h2 className="stitle">Contact Us</h2>
+
+        <p className="mut">
+          Have a question or feedback? Send us a message.
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 15 }}>
+           <label style={{ display: "block", marginBottom: 6 }}> Name :
+           </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+            />
+          </div>
+
+          <div style={{ marginBottom: 15 }}>
+           <label style={{ display: "block", marginBottom: 6 }}>Email :
+          </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+          </div>
+
+         <div style={{ marginBottom: 15 }}>
+            <label style={{ display: "block", marginBottom: 6 }}>Message :
+          </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Write your message"
+            ></textarea>
+          </div>
+
+          <button type="submit" className="btn btn-gold">
+            Send Message
+          </button>
+        </form>
+
+        {sent && (
+          <div style={{ marginTop: 20 }} className="bdg bdg-g">
+            Message sent successfully!
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 export default function App() {
   const [page,setPage]=useState("home");
   const [movie,setMovie]=useState(null); const [mType,setMType]=useState("movie");
@@ -1151,6 +1231,7 @@ export default function App() {
   const [lang,setLang]=useState("en");
   const [theme,setTheme]=useState("dark");
   const t=T[lang];
+const navigate = useNavigate();
 
   useEffect(()=>{
     try{
@@ -1194,10 +1275,13 @@ export default function App() {
       <style>{CSS}</style>
       <Nav page={page} go={setPage} user={user} openAuth={setAuthMode} openSearch={()=>setShowSearch(true)} wl={wl} lang={lang} toggleLang={toggleLang} t={t} theme={theme} toggleTheme={toggleTheme}/>
       <main style={{width:"100%",overflowX:"hidden"}}>
-        {page==="home"&&<HomePage onOpen={openMovie} go={setPage} t={t}/>}
-        {page==="movies"&&<BrowsePage mediaType="movie" title={t.movies} onOpen={openMovie} t={t}/>}
-        {page==="tv"&&<BrowsePage mediaType="tv" title={t.tv} onOpen={openMovie} t={t}/>}
-        {page==="discover"&&<DiscoverPage onOpen={openMovie} t={t}/>}
+       <Routes>
+  <Route path="/" element={<HomePage onOpen={openMovie} go={setPage} t={t} />} />
+  <Route path="/movies" element={<BrowsePage mediaType="movie" title={t.movies} onOpen={openMovie} t={t} />} />
+  <Route path="/tv" element={<BrowsePage mediaType="tv" title={t.tv} onOpen={openMovie} t={t} />} />
+  <Route path="/discover" element={<DiscoverPage onOpen={openMovie} t={t} />} />
+  <Route path="/contact" element={<ContactPage t={t} />} />
+  </Routes>
         {page==="detail"&&movie&&<MovieDetail id={movie} mediaType={mType} onBack={()=>setPage("home")} user={user} wl={wl} setWl={setWl} setToast={setToast} onActorOpen={openActor} t={t} lang={lang}/>}
         {page==="actor"&&actor&&<ActorPage actorId={actor} onOpen={openMovie} onBack={()=>setPage("home")} t={t}/>}
         {page==="dash"&&user&&<Dashboard user={user} wl={wl} setWl={setWl} onOpen={openMovie} go={setPage} setUser={setUser} t={t}/>}
