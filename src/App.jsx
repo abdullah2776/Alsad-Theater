@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, useParams } from "react-router-dom";
 
 const TMDB_KEY = "20dd09adbf02a4a795efed497b592817";
 const BASE = "https://api.themoviedb.org/3";
@@ -777,6 +777,9 @@ function ActorPage({ actorId, onOpen, onBack, t }) {
 }
 
 function MovieDetail({ id, mediaType, onBack, user, wl, setWl, setToast, onActorOpen, t, lang }) {
+  const { id: routeId, mediaType: routeType } = useParams();
+  const movieId = routeId || id;
+  const type = routeType || mediaType;
   const [data,setData]=useState(null); const [trailer,setTrailer]=useState(null);
   const [cast,setCast]=useState([]); const [similar,setSimilar]=useState([]);
   const [reviews,setReviews]=useState([]); const [rtxt,setRtxt]=useState(""); const [uRating,setURating]=useState(0);
@@ -786,42 +789,41 @@ function MovieDetail({ id, mediaType, onBack, user, wl, setWl, setToast, onActor
   useEffect(()=>{
     setLoading(true); setErr(""); setData(null); setCast([]); setSimilar([]); setTrailer(null);
     setTranslation(null); setTrState("idle"); window.scrollTo(0,0);
-    const type=mediaType==="tv"?"tv":"movie";
     Promise.all([
-      tmdb(`/${type}/${id}`,{append_to_response:"videos,credits"}),
-      tmdb(`/${type}/${id}/similar`),
+      tmdb(`/${type}/${movieId}`,{append_to_response:"videos,credits"}),
+      tmdb(`/${type}/${movieId}/similar`),
     ]).then(([d,sim])=>{
       setData(d);
       const v=(d.videos?.results||[]).find(x=>x.type==="Trailer"&&x.site==="YouTube")||(d.videos?.results||[]).find(x=>x.site==="YouTube");
       setTrailer(v); setCast(d.credits?.cast?.slice(0,16)||[]); setSimilar((sim.results||[]).slice(0,8));
       setLoading(false);
     }).catch(()=>{setErr(t.failed_load);setLoading(false);});
-    setReviews(JSON.parse(localStorage.getItem(`r_${id}`)||"[]"));
+    setReviews(JSON.parse(localStorage.getItem(`r_${movieId}`)||"[]"));
   },[id,mediaType]);
 
   const doTranslate=useCallback(async()=>{
     setTrState("loading");
-    const result=await fetchArabic(mediaType,id);
+    const result=await fetchArabic(type,movieId);
     if(result){setTranslation(result);setTrState("done");}else{setTrState("idle");}
-  },[mediaType,id]);
+  },[type,movieId]);
 
   useEffect(()=>{
     if(lang==="ar"&&data&&trState==="idle"){doTranslate();}
     if(lang==="en"){setTranslation(null);setTrState("idle");}
   },[lang,data]);
 
-  const inWl=wl.some(x=>x.id===id);
+  const inWl=wl.some(x=>x.id===movieId);
   const toggleWl=()=>{
     if(!user)return setToast(t.sign_in_review);
-    if(inWl){setWl(w=>w.filter(x=>x.id!==id));setToast("Removed ✓");}
-    else{setWl(w=>[...w,{id,title:data.title||data.name,poster:data.poster_path,rating:data.vote_average,mediaType}]);setToast(t.in_wl);}
+    if(inWl){setWl(w=>w.filter(x=>x.id!==movieId));setToast("Removed ✓");}
+    else{setWl(w=>[...w,{id,movieId,title:data.title||data.name,poster:data.poster_path,rating:data.vote_average,mediaType :type}]);setToast(t.in_wl);}
   };
   const postReview=()=>{
     if(!user)return setToast(t.sign_in_review);
     if(!rtxt.trim())return;
     const r={id:Date.now(),user:user.name,text:rtxt,rating:uRating,date:new Date().toLocaleDateString()};
     const up=[r,...reviews];
-    setReviews(up);localStorage.setItem(`r_${id}`,JSON.stringify(up));
+    setReviews(up);localStorage.setItem(`r_${movieId}`,JSON.stringify(up));
     setRtxt("");setURating(0);setToast(t.post_review+" ✓");
   };
 
@@ -1254,8 +1256,10 @@ const navigate = useNavigate();
 
   const openMovie=useCallback((m)=>{
     const mt=m.media_type==="tv"?"tv":"movie";
-    setMovie(m.id||m);setMType(mt);setActor(null);setPage("detail");window.scrollTo(0,0);
-  },[]);
+    setMovie(m.id||m);setMType(mt);setActor(null);
+   navigate(`/movie/${mt}/${m.id || m}`);
+
+    window.scrollTo(0,0);},[navigate]);
 
   const openActor=useCallback((id)=>{setActor(id);setPage("actor");window.scrollTo(0,0);},[]);
 
@@ -1281,8 +1285,17 @@ const navigate = useNavigate();
   <Route path="/tv" element={<BrowsePage mediaType="tv" title={t.tv} onOpen={openMovie} t={t} />} />
   <Route path="/discover" element={<DiscoverPage onOpen={openMovie} t={t} />} />
   <Route path="/contact" element={<ContactPage t={t} />} />
+  <Route path="/movie/:mediaType/:id"element={<MovieDetail mediaType={mType} onBack={() => navigate("/")}
+          user={user}
+          wl={wl}
+          setWl={setWl}
+          setToast={setToast}
+          onActorOpen={openActor}
+          t={t}
+          lang={lang} />}
+        />
   </Routes>
-        {page==="detail"&&movie&&<MovieDetail id={movie} mediaType={mType} onBack={()=>setPage("home")} user={user} wl={wl} setWl={setWl} setToast={setToast} onActorOpen={openActor} t={t} lang={lang}/>}
+       
         {page==="actor"&&actor&&<ActorPage actorId={actor} onOpen={openMovie} onBack={()=>setPage("home")} t={t}/>}
         {page==="dash"&&user&&<Dashboard user={user} wl={wl} setWl={setWl} onOpen={openMovie} go={setPage} setUser={setUser} t={t}/>}
         {gid&&<GenrePage gid={gid} gname={gname} onOpen={openMovie} t={t}/>}
