@@ -51,7 +51,7 @@ const T = {
     sort_pop:"Popular", sort_rated:"Top Rated", sort_new:"Newest", sort_box:"Box Office",
     sort_by:"Sort", min_rating:"Min Rating", year_lbl:"Year", filters:"Filters",
     member_since:"Member Since", reviews_written:"Reviews Written",
-    powered:"Abdullah Qubbaj · All rights reserved",
+    powered:"Abdullah Qubbaj & Areej AL-Tobasi · All rights reserved",
     search_placeholder:"Search movies, shows, actors…", searching:"Searching…",
     failed_load:"Failed to load. Check your connection.",
   },
@@ -76,7 +76,7 @@ const T = {
     sort_pop:"الأكثر شعبية", sort_rated:"الأعلى تقييماً", sort_new:"الأحدث", sort_box:"إيرادات",
     sort_by:"ترتيب", min_rating:"أقل تقييم", year_lbl:"السنة", filters:"الفلاتر",
     member_since:"عضو منذ", reviews_written:"مراجعاتي",
-    powered:"عبدالله قباج · جميع الحقوق محفوظة",
+    powered:"عبدالله قبج و أريج الطوباسي · جميع الحقوق محفوظة",
     search_placeholder:"ابحث عن فيلم أو مسلسل…", searching:"جارٍ البحث…",
     failed_load:"فشل التحميل. تحقق من اتصالك.",
   }
