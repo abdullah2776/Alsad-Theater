@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
 
 const TMDB_KEY = "20dd09adbf02a4a795efed497b592817";
 const BASE = "https://api.themoviedb.org/3";
@@ -51,7 +52,7 @@ const T = {
     sort_pop:"Popular", sort_rated:"Top Rated", sort_new:"Newest", sort_box:"Box Office",
     sort_by:"Sort", min_rating:"Min Rating", year_lbl:"Year", filters:"Filters",
     member_since:"Member Since", reviews_written:"Reviews Written",
-    powered:"Abdullah Qubbaj & Areej AL-Tobasi · All rights reserved",
+powered:"Abdullah Qubbaj & Areej Al-Tobasi · All rights reserved",
     search_placeholder:"Search movies, shows, actors…", searching:"Searching…",
     failed_load:"Failed to load. Check your connection.",
   },
@@ -526,74 +527,191 @@ function ThemeToggle({ theme, toggle }) {
   );
 }
 
-function Nav({ page, go, user, openAuth, openSearch, wl, lang, toggleLang, t, theme, toggleTheme }) {
+function Nav({ user, openAuth, openSearch, wl, toggleLang, t, theme, toggleTheme }) {
   const [drawer, setDrawer] = useState(false);
-  const links = [["home",t.home],["movies",t.movies],["tv",t.tv],["discover",t.discover]];
-  const icons = { home:"🏠", movies:"🎬", tv:"📺", discover:"🔭" };
-  const close = (id) => { go(id); setDrawer(false); };
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const links = [
+    ["home", t.home],
+    ["movies", t.movies],
+    ["tv", t.tv],
+    ["discover", t.discover],
+    ["contact", "Contact"],
+  ];
+
+  const icons = {
+    home: "🏠",
+    movies: "🎬",
+    tv: "📺",
+    discover: "🔭",
+    contact: "📩",
+  };
+
+  const goTo = (id) => {
+    const path = id === "home" ? "/" : `/${id}`;
+    navigate(path);
+    setDrawer(false);
+  };
+
+  const isActive = (id) => {
+    if (id === "home") return location.pathname === "/";
+    return location.pathname === `/${id}` || location.pathname.startsWith(`/${id}/`);
+  };
 
   return (
     <>
       <nav className="nav">
         <div className="nav-in">
-          {/* Logo — always left */}
-          <div className="nav-logo cinzel" onClick={()=>go("home")}>⬡ ALSAD</div>
+          <div className="nav-logo cinzel" onClick={() => navigate("/")}>⬡ ALSAD</div>
 
-          {/* Desktop nav links */}
           <div className="nav-links">
-            {links.map(([id,lbl])=>(
-              <button key={id} className={`nav-lnk${page===id||page.startsWith(id)?" on":""}`} onClick={()=>go(id)}>{lbl}</button>
+            {links.map(([id, lbl]) => (
+              <button
+                key={id}
+                className={`nav-lnk${isActive(id) ? " on" : ""}`}
+                onClick={() => goTo(id)}
+              >
+                {lbl}
+              </button>
             ))}
           </div>
 
-          {/* Right actions */}
           <div className="nav-actions">
             <button className="nav-icon-btn" onClick={openSearch} title="Search">🔍︎</button>
             <ThemeToggle theme={theme} toggle={toggleTheme} />
-            <button className="btn btn-ghost" style={{padding:"5px 10px",fontSize:13,fontWeight:700,minWidth:36}} onClick={toggleLang}>{t.arabic}</button>
+            <button
+              className="btn btn-ghost"
+              style={{ padding: "5px 10px", fontSize: 13, fontWeight: 700, minWidth: 36 }}
+              onClick={toggleLang}
+            >
+              {t.arabic}
+            </button>
 
-            {/* User — shown on wider screens */}
-            <div style={{display:"none"}} className="nav-user-desktop">
-              {user
-                ? <button className="btn btn-ghost" style={{padding:"5px 10px",fontSize:12.5}} onClick={()=>go("dash")}>
-                    <span style={{width:20,height:20,borderRadius:"50%",background:"var(--btn-bg)",display:"inline-flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"var(--btn-txt)",fontWeight:700}}>{user.name[0].toUpperCase()}</span>
-                    <span style={{maxWidth:70,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.name}</span>
-                    {wl.length>0 && <span className="bdg bdg-g" style={{fontSize:10,padding:"1px 5px"}}>{wl.length}</span>}
-                  </button>
-                : <button className="btn btn-gold" style={{padding:"7px 14px",fontSize:12.5}} onClick={()=>openAuth("login")}>{t.signIn}</button>
-              }
+            <div style={{ display: "none" }} className="nav-user-desktop">
+              {user ? (
+                <button
+                  className="btn btn-ghost"
+                  style={{ padding: "5px 10px", fontSize: 12.5 }}
+                  onClick={() => navigate("/dashboard")}
+                >
+                  <span
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: "50%",
+                      background: "var(--btn-bg)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 10,
+                      color: "var(--btn-txt)",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {user.name[0].toUpperCase()}
+                  </span>
+                  <span style={{ maxWidth: 70, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {user.name}
+                  </span>
+                  {wl.length > 0 && (
+                    <span className="bdg bdg-g" style={{ fontSize: 10, padding: "1px 5px" }}>
+                      {wl.length}
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <button
+                  className="btn btn-gold"
+                  style={{ padding: "7px 14px", fontSize: 12.5 }}
+                  onClick={() => openAuth("login")}
+                >
+                  {t.signIn}
+                </button>
+              )}
             </div>
 
-            {/* Hamburger — mobile only */}
-            <button className="hamburger" onClick={()=>setDrawer(true)} aria-label="Menu">☰</button>
+            <button className="hamburger" onClick={() => setDrawer(true)} aria-label="Menu">☰</button>
           </div>
         </div>
       </nav>
 
-      {drawer && <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",zIndex:699}} onClick={()=>setDrawer(false)}/>}
-      <div className={`drawer${drawer?" open":""}`}>
+      {drawer && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", zIndex: 699 }}
+          onClick={() => setDrawer(false)}
+        />
+      )}
+
+      <div className={`drawer${drawer ? " open" : ""}`}>
         <div className="drawer-head">
-          <span className="nav-logo cinzel" style={{letterSpacing:2}}>⬡ ALSAD</span>
-          <button onClick={()=>setDrawer(false)} style={{background:"none",border:"none",color:"var(--mut)",fontSize:22,cursor:"pointer",padding:4}}>✕</button>
+          <span className="nav-logo cinzel" style={{ letterSpacing: 2 }}>⬡ ALSAD</span>
+          <button
+            onClick={() => setDrawer(false)}
+            style={{ background: "none", border: "none", color: "var(--mut)", fontSize: 22, cursor: "pointer", padding: 4 }}
+          >
+            ✕
+          </button>
         </div>
+
         <div className="drawer-body">
-          {links.map(([id,lbl])=>(
-            <button key={id} className={`drawer-lnk${page===id||page.startsWith(id)?" on":""}`} onClick={()=>close(id)}>
-              <span style={{fontSize:18}}>{icons[id]}</span>{lbl}
+          {links.map(([id, lbl]) => (
+            <button
+              key={id}
+              className={`drawer-lnk${isActive(id) ? " on" : ""}`}
+              onClick={() => goTo(id)}
+            >
+              <span style={{ fontSize: 18 }}>{icons[id]}</span>
+              {lbl}
             </button>
           ))}
-          <div style={{height:1,background:"var(--brd)",margin:"12px 0"}}/>
+
+          <div style={{ height: 1, background: "var(--brd)", margin: "12px 0" }} />
+
           <button className="drawer-lnk" onClick={toggleTheme}>
-            <span style={{fontSize:18}}>{theme==="dark"?"☀":"🌙"}</span>
-            {theme==="dark"?"Light Mode":"Dark Mode"}
+            <span style={{ fontSize: 18 }}>{theme === "dark" ? "☀" : "🌙"}</span>
+            {theme === "dark" ? "Light Mode" : "Dark Mode"}
           </button>
-          {user
-            ? <>
-                <button className="drawer-lnk" onClick={()=>close("dash")}>👤 {user.name} {wl.length>0&&<span className="bdg bdg-g" style={{fontSize:11,padding:"1px 6px",marginLeft:6}}>{wl.length}</span>}</button>
-                <button className="drawer-lnk" onClick={()=>{go("home");setDrawer(false);}} style={{color:"#cc4444"}}>🚪 {t.sign_out}</button>
-              </>
-            : <button className="drawer-lnk on" onClick={()=>{openAuth("login");setDrawer(false);}}>✨ {t.signIn}</button>
-          }
+
+          {user ? (
+            <>
+              <button
+                className="drawer-lnk"
+                onClick={() => {
+                  navigate("/dashboard");
+                  setDrawer(false);
+                }}
+              >
+                👤 {user.name}
+                {wl.length > 0 && (
+                  <span className="bdg bdg-g" style={{ fontSize: 11, padding: "1px 6px", marginLeft: 6 }}>
+                    {wl.length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                className="drawer-lnk"
+                onClick={() => {
+                  localStorage.removeItem("alsad_user");
+                  window.location.href = "/";
+                }}
+                style={{ color: "#cc4444" }}
+              >
+                🚪 {t.sign_out}
+              </button>
+            </>
+          ) : (
+            <button
+              className="drawer-lnk on"
+              onClick={() => {
+                openAuth("login");
+                setDrawer(false);
+              }}
+            >
+              ✨ {t.signIn}
+            </button>
+          )}
         </div>
       </div>
 
@@ -773,6 +891,9 @@ function ActorPage({ actorId, onOpen, onBack, t }) {
 }
 
 function MovieDetail({ id, mediaType, onBack, user, wl, setWl, setToast, onActorOpen, t, lang }) {
+  const { id: routeId, mediaType: routeType } = useParams();
+  const movieId = routeId || id;
+  const type = routeType || mediaType;
   const [data,setData]=useState(null); const [trailer,setTrailer]=useState(null);
   const [cast,setCast]=useState([]); const [similar,setSimilar]=useState([]);
   const [reviews,setReviews]=useState([]); const [rtxt,setRtxt]=useState(""); const [uRating,setURating]=useState(0);
@@ -782,42 +903,41 @@ function MovieDetail({ id, mediaType, onBack, user, wl, setWl, setToast, onActor
   useEffect(()=>{
     setLoading(true); setErr(""); setData(null); setCast([]); setSimilar([]); setTrailer(null);
     setTranslation(null); setTrState("idle"); window.scrollTo(0,0);
-    const type=mediaType==="tv"?"tv":"movie";
     Promise.all([
-      tmdb(`/${type}/${id}`,{append_to_response:"videos,credits"}),
-      tmdb(`/${type}/${id}/similar`),
+      tmdb(`/${type}/${movieId}`,{append_to_response:"videos,credits"}),
+      tmdb(`/${type}/${movieId}/similar`),
     ]).then(([d,sim])=>{
       setData(d);
       const v=(d.videos?.results||[]).find(x=>x.type==="Trailer"&&x.site==="YouTube")||(d.videos?.results||[]).find(x=>x.site==="YouTube");
       setTrailer(v); setCast(d.credits?.cast?.slice(0,16)||[]); setSimilar((sim.results||[]).slice(0,8));
       setLoading(false);
     }).catch(()=>{setErr(t.failed_load);setLoading(false);});
-    setReviews(JSON.parse(localStorage.getItem(`r_${id}`)||"[]"));
-  },[id,mediaType]);
+    setReviews(JSON.parse(localStorage.getItem(`r_${movieId}`)||"[]"));
+  },[movieId,type,t.failed_load]);
 
   const doTranslate=useCallback(async()=>{
     setTrState("loading");
-    const result=await fetchArabic(mediaType,id);
+    const result=await fetchArabic(type,movieId);
     if(result){setTranslation(result);setTrState("done");}else{setTrState("idle");}
-  },[mediaType,id]);
+  },[type,movieId]);
 
   useEffect(()=>{
     if(lang==="ar"&&data&&trState==="idle"){doTranslate();}
     if(lang==="en"){setTranslation(null);setTrState("idle");}
   },[lang,data]);
 
-  const inWl=wl.some(x=>x.id===id);
+  const inWl=wl.some(x=>x.id===movieId);
   const toggleWl=()=>{
     if(!user)return setToast(t.sign_in_review);
-    if(inWl){setWl(w=>w.filter(x=>x.id!==id));setToast("Removed ✓");}
-    else{setWl(w=>[...w,{id,title:data.title||data.name,poster:data.poster_path,rating:data.vote_average,mediaType}]);setToast(t.in_wl);}
+    if(inWl){setWl(w=>w.filter(x=>x.id!==movieId));setToast("Removed ✓");}
+    else{setWl(w=>[...w,{id:movieId,title:data.title||data.name,poster:data.poster_path,rating:data.vote_average,mediaType:type}]);setToast(t.in_wl);}
   };
   const postReview=()=>{
     if(!user)return setToast(t.sign_in_review);
     if(!rtxt.trim())return;
     const r={id:Date.now(),user:user.name,text:rtxt,rating:uRating,date:new Date().toLocaleDateString()};
     const up=[r,...reviews];
-    setReviews(up);localStorage.setItem(`r_${id}`,JSON.stringify(up));
+    setReviews(up);localStorage.setItem(`r_${movieId}`,JSON.stringify(up));
     setRtxt("");setURating(0);setToast(t.post_review+" ✓");
   };
 
@@ -971,7 +1091,7 @@ function HomePage({ onOpen, go, t }) {
       <div className="sec" style={{paddingBottom:16}}><div className="smx">
         <h2 className="stitle">{t.browse_genre}</h2>
         <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-          {genres.map(g=><span key={g.id} className="gc" onClick={()=>go(`genre_${g.id}_${g.n}`)}>{g.n}</span>)}
+          {genres.map(g=><span key={g.id} className="gc" onClick={()=>go(`/genre/${g.id}/${encodeURIComponent(g.n)}`)}>{g.n}</span>)}
         </div>
       </div></div>
 
@@ -1139,73 +1259,373 @@ function Dashboard({ user, wl, setWl, onOpen, go, setUser, t }) {
     </div></div>
   );
 }
+function ContactPage({ t }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [sent, setSent] = useState(false);
+
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    if (name === "" || email === "" || message === "") {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    setSent(true);
+
+    setName("");
+    setEmail("");
+    setMessage("");
+  }
+
+  return (
+    <div className="sec">
+      <div className="smx">
+        <h2 className="stitle">Contact Us</h2>
+
+        <p className="mut">
+          Have a question or feedback? Send us a message.
+        </p>
+
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 15 }}>
+           <label style={{ display: "block", marginBottom: 6 }}> Name :
+           </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+            />
+          </div>
+
+          <div style={{ marginBottom: 15 }}>
+           <label style={{ display: "block", marginBottom: 6 }}>Email :
+          </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+          </div>
+
+         <div style={{ marginBottom: 15 }}>
+            <label style={{ display: "block", marginBottom: 6 }}>Message :
+          </label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Write your message"
+            ></textarea>
+          </div>
+
+          <button type="submit" className="btn btn-gold">
+            Send Message
+          </button>
+        </form>
+
+        {sent && (
+          <div style={{ marginTop: 20 }} className="bdg bdg-g">
+            Message sent successfully!
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+function ActorRoute({ onOpen, onBack, t }) {
+  const { id } = useParams();
+
+  return (
+    <ActorPage
+      actorId={id}
+      onOpen={onOpen}
+      onBack={onBack}
+      t={t}
+    />
+  );
+}
+
+function GenreRoute({ onOpen, t }) {
+  const { gid, gname } = useParams();
+
+  return (
+    <GenrePage
+      gid={gid}
+      gname={decodeURIComponent(gname || "")}
+      onOpen={onOpen}
+      t={t}
+    />
+  );
+}
 
 export default function App() {
-  const [page,setPage]=useState("home");
-  const [movie,setMovie]=useState(null); const [mType,setMType]=useState("movie");
-  const [actor,setActor]=useState(null);
-  const [user,setUser]=useState(null); const [authMode,setAuthMode]=useState(null);
-  const [showSearch,setShowSearch]=useState(false);
-  const [wl,setWl]=useState([]);
-  const [toast,setToast]=useState(null);
-  const [lang,setLang]=useState("en");
-  const [theme,setTheme]=useState("dark");
-  const t=T[lang];
+  const [user, setUser] = useState(null);
+  const [authMode, setAuthMode] = useState(null);
+  const [showSearch, setShowSearch] = useState(false);
+  const [wl, setWl] = useState([]);
+  const [toast, setToast] = useState(null);
+  const [lang, setLang] = useState("en");
+  const [theme, setTheme] = useState("dark");
+  const navigate = useNavigate();
+  const t = T[lang];
 
-  useEffect(()=>{
-    try{
-      const wu=localStorage.getItem("alsad_user");if(wu)setUser(JSON.parse(wu));
-      const ww=localStorage.getItem("alsad_wl");if(ww)setWl(JSON.parse(ww));
-      const lg=localStorage.getItem("alsad_lang");if(lg)setLang(lg);
-      const th=localStorage.getItem("alsad_theme");if(th)setTheme(th);
-    }catch{}
-  },[]);
+  useEffect(() => {
+    try {
+      const wu = localStorage.getItem("alsad_user");
+      if (wu) setUser(JSON.parse(wu));
 
-  useEffect(()=>{
-    document.body.dir=t.dir;
-    if(theme==="light"){document.body.classList.add("light");}
-    else{document.body.classList.remove("light");}
-    try{localStorage.setItem("alsad_wl",JSON.stringify(wl));}catch{}
-  },[lang,wl,t.dir,theme]);
+      const ww = localStorage.getItem("alsad_wl");
+      if (ww) setWl(JSON.parse(ww));
 
-  const toggleLang=()=>{const n=lang==="en"?"ar":"en";setLang(n);localStorage.setItem("alsad_lang",n);};
-  const toggleTheme=()=>{const n=theme==="dark"?"light":"dark";setTheme(n);localStorage.setItem("alsad_theme",n);};
+      const lg = localStorage.getItem("alsad_lang");
+      if (lg === "en" || lg === "ar") setLang(lg);
 
-  const openMovie=useCallback((m)=>{
-    const mt=m.media_type==="tv"?"tv":"movie";
-    setMovie(m.id||m);setMType(mt);setActor(null);setPage("detail");window.scrollTo(0,0);
-  },[]);
+      const th = localStorage.getItem("alsad_theme");
+      if (th === "dark" || th === "light") setTheme(th);
+    } catch {}
+  }, []);
 
-  const openActor=useCallback((id)=>{setActor(id);setPage("actor");window.scrollTo(0,0);},[]);
+  useEffect(() => {
+    document.body.dir = t.dir;
 
-  useEffect(()=>{
-    const h=e=>openMovie(e.detail);
-    window.addEventListener("alsad_open",h);
-    return()=>window.removeEventListener("alsad_open",h);
-  },[openMovie]);
+    if (theme === "light") {
+      document.body.classList.add("light");
+    } else {
+      document.body.classList.remove("light");
+    }
 
-  const doLogin=(u)=>{setUser(u);localStorage.setItem("alsad_user",JSON.stringify(u));setToast(lang==="ar"?`أهلاً، ${u.name}!`:`Welcome, ${u.name}!`);};
+    try {
+      localStorage.setItem("alsad_wl", JSON.stringify(wl));
+    } catch {}
+  }, [lang, wl, t.dir, theme]);
 
-  let gid=null,gname=null;
-  if(page.startsWith("genre_")){const p=page.split("_");gid=p[1];gname=p.slice(2).join(" ");}
+  const toggleLang = () => {
+    const next = lang === "en" ? "ar" : "en";
+    setLang(next);
+    localStorage.setItem("alsad_lang", next);
+  };
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("alsad_theme", next);
+  };
+
+  const go = useCallback((path) => {
+    if (path === "home") return navigate("/");
+    if (path === "movies") return navigate("/movies");
+    if (path === "tv") return navigate("/tv");
+    if (path === "discover") return navigate("/discover");
+    if (path === "contact") return navigate("/contact");
+    if (path === "dash") return navigate("/dashboard");
+
+    if (path.startsWith("/")) {
+      navigate(path);
+    }
+  }, [navigate]);
+
+  const openMovie = useCallback((m) => {
+    if (!m) return;
+
+    const mt = m.media_type === "tv" ? "tv" : "movie";
+    const movieId = m.id;
+
+    if (!movieId) return;
+
+    navigate(`/movie/${mt}/${movieId}`);
+    window.scrollTo(0, 0);
+  }, [navigate]);
+
+  const openActor = useCallback((id) => {
+    if (!id) return;
+
+    navigate(`/actor/${id}`);
+    window.scrollTo(0, 0);
+  }, [navigate]);
+
+  useEffect(() => {
+    const handleOpenMovie = (event) => {
+      openMovie(event.detail);
+    };
+
+    window.addEventListener("alsad_open", handleOpenMovie);
+
+    return () => {
+      window.removeEventListener("alsad_open", handleOpenMovie);
+    };
+  }, [openMovie]);
+
+  const doLogin = (u) => {
+    setUser(u);
+    localStorage.setItem("alsad_user", JSON.stringify(u));
+    setToast(
+      lang === "ar"
+        ? `أهلاً، ${u.name}!`
+        : `Welcome, ${u.name}!`
+    );
+  };
 
   return (
     <>
       <style>{CSS}</style>
-      <Nav page={page} go={setPage} user={user} openAuth={setAuthMode} openSearch={()=>setShowSearch(true)} wl={wl} lang={lang} toggleLang={toggleLang} t={t} theme={theme} toggleTheme={toggleTheme}/>
-      <main style={{width:"100%",overflowX:"hidden"}}>
-        {page==="home"&&<HomePage onOpen={openMovie} go={setPage} t={t}/>}
-        {page==="movies"&&<BrowsePage mediaType="movie" title={t.movies} onOpen={openMovie} t={t}/>}
-        {page==="tv"&&<BrowsePage mediaType="tv" title={t.tv} onOpen={openMovie} t={t}/>}
-        {page==="discover"&&<DiscoverPage onOpen={openMovie} t={t}/>}
-        {page==="detail"&&movie&&<MovieDetail id={movie} mediaType={mType} onBack={()=>setPage("home")} user={user} wl={wl} setWl={setWl} setToast={setToast} onActorOpen={openActor} t={t} lang={lang}/>}
-        {page==="actor"&&actor&&<ActorPage actorId={actor} onOpen={openMovie} onBack={()=>setPage("home")} t={t}/>}
-        {page==="dash"&&user&&<Dashboard user={user} wl={wl} setWl={setWl} onOpen={openMovie} go={setPage} setUser={setUser} t={t}/>}
-        {gid&&<GenrePage gid={gid} gname={gname} onOpen={openMovie} t={t}/>}
+
+      <Nav
+        user={user}
+        openAuth={setAuthMode}
+        openSearch={() => setShowSearch(true)}
+        wl={wl}
+        toggleLang={toggleLang}
+        t={t}
+        theme={theme}
+        toggleTheme={toggleTheme}
+      />
+
+      <main style={{ width: "100%", overflowX: "hidden" }}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <HomePage
+                onOpen={openMovie}
+                go={go}
+                t={t}
+              />
+            }
+          />
+
+          <Route
+            path="/movies"
+            element={
+              <BrowsePage
+                mediaType="movie"
+                title={t.movies}
+                onOpen={openMovie}
+                t={t}
+              />
+            }
+          />
+
+          <Route
+            path="/tv"
+            element={
+              <BrowsePage
+                mediaType="tv"
+                title={t.tv}
+                onOpen={openMovie}
+                t={t}
+              />
+            }
+          />
+
+          <Route
+            path="/discover"
+            element={
+              <DiscoverPage
+                onOpen={openMovie}
+                t={t}
+              />
+            }
+          />
+
+          <Route
+            path="/contact"
+            element={<ContactPage t={t} />}
+          />
+
+          <Route
+            path="/movie/:mediaType/:id"
+            element={
+              <MovieDetail
+                onBack={() => navigate(-1)}
+                user={user}
+                wl={wl}
+                setWl={setWl}
+                setToast={setToast}
+                onActorOpen={openActor}
+                t={t}
+                lang={lang}
+              />
+            }
+          />
+
+          <Route
+            path="/actor/:id"
+            element={
+              <ActorRoute
+                onOpen={openMovie}
+                onBack={() => navigate(-1)}
+                t={t}
+              />
+            }
+          />
+
+          <Route
+            path="/genre/:gid/:gname"
+            element={
+              <GenreRoute
+                onOpen={openMovie}
+                t={t}
+              />
+            }
+          />
+
+          <Route
+            path="/dashboard"
+            element={
+              user ? (
+                <Dashboard
+                  user={user}
+                  wl={wl}
+                  setWl={setWl}
+                  onOpen={openMovie}
+                  go={go}
+                  setUser={setUser}
+                  t={t}
+                />
+              ) : (
+                <Navigate to="/" replace />
+              )
+            }
+          />
+
+          <Route
+            path="*"
+            element={<Navigate to="/" replace />}
+          />
+        </Routes>
       </main>
-      {authMode&&<AuthModal mode={authMode} onClose={()=>setAuthMode(null)} onLogin={doLogin} t={t}/>}
-      {showSearch&&<SearchModal onClose={()=>setShowSearch(false)} onOpen={openMovie} onActorOpen={(id)=>{openActor(id);setShowSearch(false);}} t={t}/>}
-      {toast&&<Toast msg={toast} onClose={()=>setToast(null)}/>}
+
+      {authMode && (
+        <AuthModal
+          mode={authMode}
+          onClose={() => setAuthMode(null)}
+          onLogin={doLogin}
+          t={t}
+        />
+      )}
+
+      {showSearch && (
+        <SearchModal
+          onClose={() => setShowSearch(false)}
+          onOpen={openMovie}
+          onActorOpen={(id) => {
+            openActor(id);
+            setShowSearch(false);
+          }}
+          t={t}
+        />
+      )}
+
+      {toast && (
+        <Toast
+          msg={toast}
+          onClose={() => setToast(null)}
+        />
+      )}
     </>
   );
 }
