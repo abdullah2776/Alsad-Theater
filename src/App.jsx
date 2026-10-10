@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
+import { FeatureHub, RecommendationsPage, ComparePage, AdvancedFinderPage, WatchedPage, CommunityPage, MoviePickerPage, SharedWatchlistPage, TrailerGalleryPage, ReleasesPage } from "./AlsadFeatures.jsx";
 
 const TMDB_KEY = "20dd09adbf02a4a795efed497b592817";
 const BASE = "https://api.themoviedb.org/3";
@@ -537,6 +538,7 @@ function Nav({ user, openAuth, openSearch, wl, toggleLang, t, theme, toggleTheme
     ["movies", t.movies],
     ["tv", t.tv],
     ["discover", t.discover],
+    ["features", "Features"],
     ["contact", "Contact"],
   ];
 
@@ -545,6 +547,7 @@ function Nav({ user, openAuth, openSearch, wl, toggleLang, t, theme, toggleTheme
     movies: "🎬",
     tv: "📺",
     discover: "🔭",
+    features: "✨",
     contact: "📩",
   };
 
@@ -890,7 +893,7 @@ function ActorPage({ actorId, onOpen, onBack, t }) {
   );
 }
 
-function MovieDetail({ id, mediaType, onBack, user, wl, setWl, setToast, onActorOpen, t, lang }) {
+function MovieDetail({ id, mediaType, onBack, user, wl, setWl, watched = [], setWatched = () => {}, setToast, onActorOpen, t, lang }) {
   const { id: routeId, mediaType: routeType } = useParams();
   const movieId = routeId || id;
   const type = routeType || mediaType;
@@ -926,7 +929,12 @@ function MovieDetail({ id, mediaType, onBack, user, wl, setWl, setToast, onActor
     if(lang==="en"){setTranslation(null);setTrState("idle");}
   },[lang,data]);
 
-  const inWl=wl.some(x=>x.id===movieId);
+  const inWl=wl.some(x=>String(x.id)===String(movieId));
+  const isWatched = watched.some(x => String(x.id) === String(movieId));
+  const toggleWatched = () => {
+    const entry = { id: movieId, title: data.title || data.name, poster: data.poster_path, rating: data.vote_average, mediaType: type, runtime: data.runtime || 0, genres: (data.genres || []).map(g => g.name), date: new Date().toISOString() };
+    setWatched(current => isWatched ? current.filter(x => String(x.id) !== String(movieId)) : [entry, ...current]);
+  };
   const toggleWl=()=>{
     if(!user)return setToast(t.sign_in_review);
     if(inWl){setWl(w=>w.filter(x=>x.id!==movieId));setToast("Removed ✓");}
@@ -938,6 +946,10 @@ function MovieDetail({ id, mediaType, onBack, user, wl, setWl, setToast, onActor
     const r={id:Date.now(),user:user.name,text:rtxt,rating:uRating,date:new Date().toLocaleDateString()};
     const up=[r,...reviews];
     setReviews(up);localStorage.setItem(`r_${movieId}`,JSON.stringify(up));
+    try {
+      const all = JSON.parse(localStorage.getItem("alsad_reviews") || "[]");
+      localStorage.setItem("alsad_reviews", JSON.stringify([{ ...r, movieId, movieTitle: data.title || data.name, mediaType: type }, ...all.filter(x => !(x.id === r.id))]));
+    } catch {}
     setRtxt("");setURating(0);setToast(t.post_review+" ✓");
   };
 
@@ -985,6 +997,7 @@ function MovieDetail({ id, mediaType, onBack, user, wl, setWl, setToast, onActor
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               {trailer&&<button className="btn btn-gold" style={{fontSize:13,padding:"8px 14px"}} onClick={()=>setShowTrl(true)}>{t.watch_trailer}</button>}
               <button className={`btn ${inWl?"btn-gold":"btn-out"}`} style={{fontSize:13,padding:"8px 14px"}} onClick={toggleWl}>{inWl?t.in_wl:t.add_wl}</button>
+              <button className={`btn ${isWatched?"btn-gold":"btn-out"}`} style={{fontSize:13,padding:"8px 14px"}} onClick={toggleWatched}>{isWatched ? "✓ Watched" : "＋ Mark watched"}</button>
               <button className="btn btn-ghost" style={{fontSize:13,padding:"8px 12px"}} onClick={onBack}>{t.back}</button>
             </div>
           </div>
@@ -1367,6 +1380,7 @@ export default function App() {
   const [authMode, setAuthMode] = useState(null);
   const [showSearch, setShowSearch] = useState(false);
   const [wl, setWl] = useState([]);
+  const [watched, setWatched] = useState([]);
   const [toast, setToast] = useState(null);
   const [lang, setLang] = useState("en");
   const [theme, setTheme] = useState("dark");
@@ -1380,6 +1394,8 @@ export default function App() {
 
       const ww = localStorage.getItem("alsad_wl");
       if (ww) setWl(JSON.parse(ww));
+      const wh = localStorage.getItem("alsad_watched");
+      if (wh) setWatched(JSON.parse(wh));
 
       const lg = localStorage.getItem("alsad_lang");
       if (lg === "en" || lg === "ar") setLang(lg);
@@ -1400,8 +1416,9 @@ export default function App() {
 
     try {
       localStorage.setItem("alsad_wl", JSON.stringify(wl));
+      localStorage.setItem("alsad_watched", JSON.stringify(watched));
     } catch {}
-  }, [lang, wl, t.dir, theme]);
+  }, [lang, wl, watched, t.dir, theme]);
 
   const toggleLang = () => {
     const next = lang === "en" ? "ar" : "en";
@@ -1420,6 +1437,7 @@ export default function App() {
     if (path === "movies") return navigate("/movies");
     if (path === "tv") return navigate("/tv");
     if (path === "discover") return navigate("/discover");
+    if (path === "features") return navigate("/features");
     if (path === "contact") return navigate("/contact");
     if (path === "dash") return navigate("/dashboard");
 
@@ -1471,7 +1489,16 @@ export default function App() {
 
   return (
     <>
-      <style>{CSS}</style>
+      <style>{CSS + `
+/* Feature upgrade: cinematic micro-interactions */
+.mcard,.movie-card,.rcard,.filters-panel,.feature-tile{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+.mcard:hover,.movie-card:hover{transform:translateY(-4px)}
+.feature-tile:hover{transform:translateY(-3px);border-color:var(--primary)!important;box-shadow:0 12px 35px rgba(163,0,0,.12)}
+.sk{background:linear-gradient(100deg,var(--card) 20%,var(--bg3) 38%,var(--card) 56%);background-size:200% 100%;animation:alsad-shimmer 1.4s ease infinite}
+@keyframes alsad-shimmer{to{background-position-x:-200%}}
+:focus-visible{outline:2px solid var(--primary);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+`}</style>
 
       <Nav
         user={user}
@@ -1531,6 +1558,17 @@ export default function App() {
             }
           />
 
+          <Route path="/features" element={<FeatureHub />} />
+          <Route path="/recommendations" element={<RecommendationsPage wl={wl} watched={watched} onOpen={openMovie} />} />
+          <Route path="/compare" element={<ComparePage onOpen={openMovie} />} />
+          <Route path="/finder" element={<AdvancedFinderPage onOpen={openMovie} />} />
+          <Route path="/watched" element={<WatchedPage watched={watched} setWatched={setWatched} onOpen={openMovie} />} />
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/movie-picker" element={<MoviePickerPage onOpen={openMovie} />} />
+          <Route path="/shared-watchlist" element={<SharedWatchlistPage wl={wl} onOpen={openMovie} />} />
+          <Route path="/trailers" element={<TrailerGalleryPage onOpen={openMovie} />} />
+          <Route path="/releases" element={<ReleasesPage onOpen={openMovie} />} />
+
           <Route
             path="/contact"
             element={<ContactPage t={t} />}
@@ -1544,6 +1582,8 @@ export default function App() {
                 user={user}
                 wl={wl}
                 setWl={setWl}
+                watched={watched}
+                setWatched={setWatched}
                 setToast={setToast}
                 onActorOpen={openActor}
                 t={t}
