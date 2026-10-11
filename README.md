@@ -8,6 +8,8 @@ The application uses dynamic movie and TV show data from The Movie Database (TMD
 
 The project is designed with a responsive interface that works across desktop, tablet, and mobile devices.
 
+The application also includes an additional Features page with tools for personalized recommendations, movie comparisons, advanced filtering, viewing statistics, community reviews, watchlist sharing, trailer browsing, and release tracking.
+
 ## Features
 
 * Browse Movies
@@ -34,6 +36,20 @@ The project is designed with a responsive interface that works across desktop, t
 * Toast Notifications
 * Local Storage for User Data and Watchlist
 * Navigation between pages using React Router
+
+### New Features
+
+The Features page introduces 10 additional tools to improve the movie discovery experience:
+- **Personalized Recommendations:** Discover movies based on saved titles and viewing history.
+- **Compare Movies:** Compare two movies side by side, including ratings, runtime, release year, and genres.
+- **Advanced Movie Finder:** Filter movies and TV shows by genre, year, rating, language, and runtime.
+- **Watched History & Stats:** Track watched titles and view personal collection statistics.
+- **Community Reviews:** Browse reviews saved in the browser from movie detail pages.
+- **Movie Night Picker:** Choose a movie randomly from currently popular titles.
+- **Share a Watchlist:** Create a shareable link containing the current watchlist.
+- **Trailer Gallery:** Explore trending titles and watch available YouTube trailers.
+- **Release Calendar:** Explore upcoming movies and TV episodes or seasons using TMDB data.
+- **Cinematic Interface:** Enjoy hover effects, skeleton loading animations, keyboard focus indicators, and reduced-motion support.
 
 ## Technologies Used
 
@@ -105,20 +121,19 @@ http://localhost:5173
 ## Screenshots
 
 ### Home Page
-
 ![Home Page](public/Screenshots/home.png)
 
 ### Movies Page
-
 ![Movies Page](public/Screenshots/movies-page.png)
 
 ### Movie Details Page
-
 ![Movie Details Page](public/Screenshots/movie-details-page.png)
 
 ### Contact Page
-
 ![Contact Page](public/Screenshots/contact-us.png)
+
+### Features Page
+![Features Page](public/Screenshots/features-page.png)
 
 ## Live Demo
 
